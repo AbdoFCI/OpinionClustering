@@ -31,7 +31,7 @@
   <component name="FileEditorManager">
     <leaf>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Tag2vic/HashTag2Vic.py">
+        <entry file="file://$PROJECT_DIR$/Tag2vec/HashTag2Vic.py">
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
@@ -111,7 +111,7 @@
             <path>
               <item name="OpinionClustering" type="b2602c69:ProjectViewProjectNode" />
               <item name="OpinionClustering" type="462c0819:PsiDirectoryNode" />
-              <item name="Tag2vic" type="462c0819:PsiDirectoryNode" />
+              <item name="Tag2vec" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -159,7 +159,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24962178" />
@@ -191,7 +190,7 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/Tag2vic/HashTag2Vic.py">
+    <entry file="file://$PROJECT_DIR$/Tag2vec/HashTag2Vic.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/semantic_tree/Parser.py">
