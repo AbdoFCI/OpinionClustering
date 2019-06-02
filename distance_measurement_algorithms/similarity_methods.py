@@ -1,4 +1,5 @@
 import nltk
+import sklearn
 from semantic_tree import Parser
 
 def tag_jaccard_similarity_method(list1,list2):
@@ -9,7 +10,7 @@ def tag_jaccard_similarity_method(list1,list2):
     :return: double
     """
 
-    return 1 - (len(set.intersection(set(list1), set(list2)))) / \
+    return  (len(set.intersection(set(list1), set(list2)))) / \
            (len(set.union(set(list1), set(list2))))
 
 
@@ -21,9 +22,11 @@ def character_jaccard_similarity_method(list1,list2):
     :return: double
     """
 
-    opinion1_str = str(set(list1))
-    opinion2_str = str(set(list2))
-    return nltk.jaccard_distance(set(opinion1_str), set(opinion2_str))
+    opinion1_str = "".join(list1)
+    opinion2_str = "".join(list2)
+    return 
+    # return tag_jaccard_similarity_method(list(set(opinion1_str))
+    #                                      , list(set(opinion2_str)))
 
 
 def edit_distance_method(list1,list2):
@@ -33,8 +36,9 @@ def edit_distance_method(list1,list2):
     :param list2: list of str
     :return: int
     """
-
-    return nltk.edit_distance(str(set(list1)), str(set(list2)))
+    opinion1_str = "".join(list1)
+    opinion2_str = "".join(list2)
+    return nltk.edit_distance(opinion1_str,opinion2_str)
 
 
 def tree_similarity_method(list1,list2):
