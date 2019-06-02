@@ -41,9 +41,8 @@ class Tree:
     @staticmethod
     def get_lca(path1, path2):
         """
-
         :param path1: list
-        :param path2:list
+        :param path2: list
         :return: list lca lowest common ancestor of path1 and path2
         """
         lca = []
@@ -56,12 +55,11 @@ class Tree:
 
     def calc_dist(self,path1,path2):
         """
-
         :param path1: the first path
-        :param path2: rhe second path
+        :param path2: the second path
         :return: type int distance between the two paths
         """
-        if path2 == "" or path1 == "":
+        if path1 == "" or path2 == "":
             return 0
         path1 = path1.split("\\")
         path2 = path2.split("\\")
@@ -139,7 +137,7 @@ class HashTagSimilarity:
         """
         taking two lists and compute the similarity between them
         :param first_list: List
-        :param second_list: :List
+        :param second_list: List
         :return: double
         """
         total_sum = 0
