@@ -1,22 +1,19 @@
-from pyspark import *
 from graphframes import *
-from pyspark import sql
 
 
 class ConnectedComponents:
 
-    conf = SparkConf().setAppName("PySparkApp").setMaster("local[*]")
-    sc = SparkContext(conf=conf)
-    sc.setCheckpointDir(r'D:\checkpoints')
-    sqlContext = sql.SQLContext(sc)
-
-    def __init__(self, similarity_method):
+    def __init__(self, similarity_method, spark_object):
         """
 
         :param similarity_method: example tree_similarity , jaccard
         """
 
         self.similarity_method = similarity_method
+        self.sparkContext = spark_object.getSparkContext()
+        self.sqlContext = spark_object.getSQLContext()
+        self.sparkContext.setCheckpointDir()
+
 
     def _create_similarities_list(self, opinions, threshold=0.3):
         """
@@ -56,7 +53,7 @@ class ConnectedComponents:
             vertices.append([i])
         vertices_df = self.sqlContext.createDataFrame(vertices, ['id'])
 
-        rdd_edges = self.sc.parallelize(similarities_list)
+        rdd_edges = self.sparkContext.parallelize(similarities_list)
         filtered_edges = rdd_edges.filter(lambda edge: edge[2] <= init_threshold)
         edges_df = self.sqlContext.createDataFrame(filtered_edges, ['src', 'dst', 'Similarity'])
 
