@@ -1,6 +1,6 @@
 import nltk
-import sklearn
 from semantic_tree import Parser
+
 
 def tag_jaccard_similarity_method(list1,list2):
     """
@@ -24,9 +24,9 @@ def character_jaccard_similarity_method(list1,list2):
 
     opinion1_str = "".join(list1)
     opinion2_str = "".join(list2)
-    return 
-    # return tag_jaccard_similarity_method(list(set(opinion1_str))
-    #                                      , list(set(opinion2_str)))
+
+    return tag_jaccard_similarity_method(list(set(opinion1_str))
+                                         , list(set(opinion2_str)))
 
 
 def edit_distance_method(list1,list2):
