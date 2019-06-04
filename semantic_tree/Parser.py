@@ -4,6 +4,7 @@ this file class tree that responsible for getting the directory url paths and ge
 import os
 from Data_manipulation import elasticsearchManager
 import pandas as pd
+import pyarabic.araby as araby
 
 
 class Tree:
@@ -69,17 +70,27 @@ class Tree:
 
     def find_tag_path(self, tag):
         result = ""
-        query = {
+        query_arabic = {
             'size': 10000,
             'query': {
                 "bool": {
                     "filter": [
-                        {"term": {"hashtags": tag}}
+                        {"term": {"arabichashtags" : tag }}
                     ]
                 }
             }
         }
-        res = elasticsearchManager.es.search(index='tree', doc_type="tree_leaf", body=query, timeout='60m')
+        query_english = {
+            'size': 10000,
+            'query': {
+                "match": {
+                    "englishhashtags": tag
+                }
+            }
+        }
+        res = elasticsearchManager.es.search(index='tree', doc_type="tree_leaf", body=query_arabic, timeout='60m')
+        if not res['hits']['hits']:
+            res = elasticsearchManager.es.search(index='tree', doc_type="tree_leaf", body=query_english, timeout='60m')
         data = [doc for doc in res['hits']['hits']]
         if data:
             result = data[0]['_source']['path']
@@ -97,8 +108,20 @@ class Tree:
             result = self.files[file_path]
         return result
 
+    def find_last_index(self, string, character):
+
+        for i in range(len(string) - 1, -1, -1):
+            if string[i] == character:
+                return i
+        return -1
+
     def file_to_json(self, file_path, file_content):
-        return {"path":file_path, "hashtags":list(file_content)}
+        idx_last_char = self.find_last_index(file_path, '\\')
+        file_path = file_path[0:idx_last_char]
+        file_content = list(file_content)
+        if araby.is_arabicword(file_content[0]) or araby.is_arabicword(file_content[0][0]):
+            return {"path":file_path, "arabichashtags":list(file_content)}
+        return {"path":file_path, "englishhashtags":list(file_content)}
 
 
 class HashTagSimilarity:
@@ -140,7 +163,7 @@ class HashTagSimilarity:
         tag2_path = self.get_path(tag2)
         distance = self.tree.calc_dist(tag1_path,tag2_path)
         if tag1_path and tag2_path:
-            self.max_depth = len(tag1_path.split("\\"))+len(tag1_path.split("\\"))-2
+            self.max_depth = len(tag1_path.split("\\")) + len(tag2_path.split("\\")) - 2
         else:
             return 0.0
         distance = distance / self.max_depth
