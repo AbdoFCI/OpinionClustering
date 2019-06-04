@@ -1,6 +1,7 @@
 import unittest
 from distance_measurement_algorithms.similarity_methods import *
 
+
 class TestDistanceMeasurementAlgorithms(unittest.TestCase):
 
     def test_tag_jaccard_similarity_method_1(self):
@@ -59,12 +60,21 @@ class TestDistanceMeasurementAlgorithms(unittest.TestCase):
         list2 = ['tag1', 'tag3']
         self.assertEqual(edit_distance_method(list1, list2), 1)
 
-    def test_edit_distance_method_2(self):
+    def test_edit_distance_method_3(self):
         list1 = ['tag','hash']
         list2 = ['opinion','data']
         self.assertEqual(edit_distance_method(list1, list2), 10)
 
+    def hamming_distance_method_1(self):
+        list1 = ['tag','hash']
+        list2 = ['opinion','data']
+        self.assertEqual(hamming_similarity_method(list1, list2), .5)
+
+    def hamming_distance_method_2(self):
+        list1 = ['tag','hash']
+        list2 = ['opinion','data']
+        self.assertEqual(hamming_similarity_method(list1, list2),.8 )
+
 
 if __name__ == '__main__':
     unittest.main()
-
