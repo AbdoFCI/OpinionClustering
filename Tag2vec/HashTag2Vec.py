@@ -101,7 +101,7 @@ class HashTag2Vic:
             result+=tag
         return result
 
-    def op2vic(self,tags):
+    def op2vec(self,tags):
         """
         :param tags: list of tags that represent the opinion
         :return: numpy.array representations of opinion

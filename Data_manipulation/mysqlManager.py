@@ -5,7 +5,7 @@ from  Entities import Opinion
 def read_db_config(file_name='Data_manipulation\\config.ini', section='mysql'):
     """
     Read database configuration file
-    :param file_name: str : dirictory of the configuration file
+    :param file_name: str : directory of the configuration file default("Data_manipulation\\config.ini")
     :param section: str : the name of mysql section
     :return dictionary object
     """
