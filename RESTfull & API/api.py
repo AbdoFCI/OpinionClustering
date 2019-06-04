@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
-
+from clustring_algorithms import AgglomerativeClustering, ConnectedComponents, pic, sparkKmeans
+from distance_measurement_algorithms import  similarity_methods
+from Entities import SparkConnection
 app = Flask(__name__)
 
 
@@ -12,6 +14,10 @@ def clustering():
     k = 2
     if "k" in json:
         k= json["k"]
+        if type(k).__name__ != 'int':
+            return jsonify({"msg": "k is the number of clusters which should be more than 2"})
+        elif k < 2:
+            return jsonify({"msg": "k is the number of clusters which should be more than 2"})
 
     if "data" not in json:
         return jsonify({"msg":"you should add list of hashtags for every opinion"})
@@ -41,7 +47,9 @@ def clustering():
                     return jsonify({'msg': 'you should choose affinty from these (euclidean, l1, l2, manhattan, cosine, precomputed)'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of agglomarative algorithm with TagJaccard'})
+                    #return jsonify({'msg': 'i should call a function of agglomarative algorithm with TagJaccard'})
+                    algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.tag_jaccard_similarity_method)
+                    result = algo.cluster(tags=data,n_clusters=k,affinity=prerequests["affinity"],linkage=prerequests["linkage"])
 
             elif algorithm_SM == "CharJaccard":
                 prerequests = check_agglomarative_prerequests(json)
@@ -55,11 +63,12 @@ def clustering():
                         {'msg': 'you should choose linkage from these (ward, complete, average, single)'})
 
                 elif prerequests["affinity"] == "not in" and prerequests["linkage"] != "not in":
-                    return jsonify({
-                                       'msg': 'you should choose affinty from these (euclidean, l1, l2, manhattan, cosine, precomputed)'})
+                    return jsonify({'msg': 'you should choose affinty from these (euclidean, l1, l2, manhattan, cosine, precomputed)'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of agglomarative algorithm with CharJaccard'})
+                    #return jsonify({'msg': 'i should call a function of agglomarative algorithm with CharJaccard'})
+                    algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.character_jaccard_similarity_method)
+                    result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],linkage=prerequests["linkage"])
 
             elif algorithm_SM == "EditDistance":
                 prerequests = check_agglomarative_prerequests(json)
@@ -73,11 +82,12 @@ def clustering():
                         {'msg': 'you should choose linkage from these (ward, complete, average, single)'})
 
                 elif prerequests["affinity"] == "not in" and prerequests["linkage"] != "not in":
-                    return jsonify({
-                        'msg': 'you should choose affinty from these (euclidean, l1, l2, manhattan, cosine, precomputed)'})
+                    return jsonify({'msg': 'you should choose affinty from these (euclidean, l1, l2, manhattan, cosine, precomputed)'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of agglomarative algorithm with EditDistance'})
+                    #return jsonify({'msg': 'i should call a function of agglomarative algorithm with EditDistance'})
+                    algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.edit_distance_method)
+                    result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],linkage=prerequests["linkage"])
 
             elif algorithm_SM == "Tree":
                 prerequests = check_agglomarative_prerequests(json)
@@ -91,11 +101,12 @@ def clustering():
                         {'msg': 'you should choose linkage from these (ward, complete, average, single)'})
 
                 elif prerequests["affinity"] == "not in" and prerequests["linkage"] != "not in":
-                    return jsonify({
-                        'msg': 'you should choose affinty from these (euclidean, l1, l2, manhattan, cosine, precomputed)'})
+                    return jsonify({'msg': 'you should choose affinty from these (euclidean, l1, l2, manhattan, cosine, precomputed)'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of agglomarative algorithm with Tree'})
+                    #return jsonify({'msg': 'i should call a function of agglomarative algorithm with Tree'})
+                    algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.tree_similarity_method)
+                    result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],linkage=prerequests["linkage"])
 
         elif algorithm_name == "Connected_components" and type(algorithm_name).__name__ == 'str':
             algorithm_SM = check_similarity_method(json)
@@ -116,7 +127,9 @@ def clustering():
                     return jsonify({'msg': 'you should choose init_threshold 0 to 1'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of Connected_components algorithm with TagJaccard'})
+                    #return jsonify({'msg': 'i should call a function of Connected_components algorithm with TagJaccard'})
+                    algo = ConnectedComponents.ConnectedComponents(similarity_methods.tag_jaccard_similarity_method,SparkConnection.SparkObject("appName"))
+                    result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"], increment=prerequests["increment"])
 
             elif algorithm_SM == "CharJaccard":
                 prerequests = check_CC_prerequests(json)
@@ -132,7 +145,9 @@ def clustering():
                     return jsonify({'msg': 'you should choose init_threshold 0 to 1'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of Connected_components algorithm with CharJaccard'})
+                    #return jsonify({'msg': 'i should call a function of Connected_components algorithm with CharJaccard'})
+                    algo = ConnectedComponents.ConnectedComponents(similarity_methods.character_jaccard_similarity_method, SparkConnection.SparkObject("appName"))
+                    result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],increment=prerequests["increment"])
 
             elif algorithm_SM == "EditDistance":
                 prerequests = check_CC_prerequests(json)
@@ -148,7 +163,9 @@ def clustering():
                     return jsonify({'msg': 'you should choose init_threshold 0 to 1'})
 
                 else:
-                    return jsonify({'msg': 'a function of Connected_components algorithm with EditDistance'})
+                    #return jsonify({'msg': 'a function of Connected_components algorithm with EditDistance'})
+                    algo = ConnectedComponents.ConnectedComponents(similarity_methods.edit_distance_method, SparkConnection.SparkObject("appName"))
+                    result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],increment=prerequests["increment"])
 
             elif algorithm_SM == "Tree":
                 prerequests = check_CC_prerequests(json)
@@ -164,7 +181,9 @@ def clustering():
                     return jsonify({'msg': 'you should choose init_threshold 0 to 1'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of Connected_components algorithm with Tree'})
+                    #return jsonify({'msg': 'i should call a function of Connected_components algorithm with Tree'})
+                    algo = ConnectedComponents.ConnectedComponents(similarity_methods.tree_similarity_method, SparkConnection.SparkObject("appName"))
+                    result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],increment=prerequests["increment"])
 
         elif algorithm_name == "PIC" and type(algorithm_name).__name__ == 'str':
             algorithm_SM = check_similarity_method(json)
@@ -179,7 +198,9 @@ def clustering():
                     return jsonify({'msg': 'you should choose threshold from 0 to 1, choose n_iterations more than 10 and choose initialization_mode from these (degree, random)'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of PIC algorithm with TagJaccard'})
+                    #return jsonify({'msg': 'i should call a function of PIC algorithm with TagJaccard'})
+                    algo = pic.PIC(similarity_methods.tag_jaccard_similarity_method)
+                    result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"], n_iterations=prerequests["n_iterations"], initialization_mode=prerequests["initialization_mode"])
 
             elif algorithm_SM == "CharJaccard":
                 prerequests = check_PIC_prerequests(json)
@@ -188,7 +209,9 @@ def clustering():
                     return jsonify({'msg': 'you should choose threshold from 0 to 1, choose n_iterations more than 10 and choose initialization_mode from these (degree, random)'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of PIC algorithm with CharJaccard'})
+                    #return jsonify({'msg': 'i should call a function of PIC algorithm with CharJaccard'})
+                    algo = pic.PIC(similarity_methods.character_jaccard_similarity_method)
+                    result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"], n_iterations=prerequests["n_iterations"], initialization_mode=prerequests["initialization_mode"])
 
             elif algorithm_SM == "EditDistance":
                 prerequests = check_PIC_prerequests(json)
@@ -197,7 +220,9 @@ def clustering():
                     return jsonify({'msg': 'you should choose threshold from 0 to 1, choose n_iterations more than 10 and choose initialization_mode from these (degree, random)'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of PIC algorithm with EditDistance'})
+                    #return jsonify({'msg': 'i should call a function of PIC algorithm with EditDistance'})
+                    algo = pic.PIC(similarity_methods.edit_distance_method)
+                    result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"], n_iterations=prerequests["n_iterations"], initialization_mode=prerequests["initialization_mode"])
 
             elif algorithm_SM == "Tree":
                 prerequests = check_PIC_prerequests(json)
@@ -206,7 +231,9 @@ def clustering():
                     return jsonify({'msg': 'you should choose threshold from 0 to 1, choose n_iterations more than 10 and choose initialization_mode from these (degree, random)'})
 
                 else:
-                    return jsonify({'msg': 'i should call a function of PIC algorithm with Tree'})
+                    #return jsonify({'msg': 'i should call a function of PIC algorithm with Tree'})
+                    algo = pic.PIC(similarity_methods.tree_similarity_method)
+                    result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],n_iterations=prerequests["n_iterations"],initialization_mode=prerequests["initialization_mode"])
 
         elif algorithm_name == "KMean" and type(algorithm_name).__name__ == 'str':
             prerequests = check_KMean_prerequests(json)
@@ -221,7 +248,9 @@ def clustering():
                 return jsonify({'msg': 'you should choose method from these (sum, average)'})
 
             else:
-                return jsonify({'msg': 'i should call a function of KMean algorithm'})
+                #return jsonify({'msg': 'i should call a function of KMean algorithm'})
+                algo = sparkKmeans.KMeansClustering(SparkConnection.SparkObject("appName"))
+                result = algo.cluster(tags=data, n_clusters=k, permutation=prerequests["permutation"], permutation_drop=0.5,method=prerequests["permutation"])
 
         else:
             return jsonify({"msg": "You should choose algorithm name from these (Agglomarative, Connected_components, PIC, KMean)"})
