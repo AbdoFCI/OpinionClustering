@@ -35,18 +35,14 @@ class ConnectedComponents:
         return similarities_list
 
     def cluster(self, tags, n_clusters=2, init_threshold=0.3, increment=0.1):
-        # """
-        #     Computes the connected components of the graph.
-        #
-        #     :param numOfVertices: Number of opinions
-        #     :param edges: List of vectors each consists of two opinions and similarity between them
-        #     :param k: Number of expected clusters (default: 2)
-        #     :param initTh: Initial similarity threshold value (default: 0.3)
-        #     :param increment: Threshold increment value (default: 0.1)
-        #
-        #     :return: DataFrame with new vertices column "component"
-        # """
-
+        """
+        Computes the connected components of the graph.
+        :param tags: list of list of str opinions data
+        :param n_clusters: number of clusters 3-9 clusters default (2)
+        :param init_threshold: float range [0-1] similarity init threshold default (0.3)
+        :param increment: float iteration increasing if init_threshold
+        :return:
+        """
         similarities_list = self._create_similarities_list(tags, threshold=init_threshold)
         vertices = []
         for i in range(1, len(tags)+1):
