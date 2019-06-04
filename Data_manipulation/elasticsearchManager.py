@@ -54,7 +54,6 @@ def read_tree_index_setting(file_name='Data_manipulation\\config.ini', section='
             index_body[item[0]] = item[1]
     else:
         raise Exception('{0} not found in the {1} file'.format(section, file_name))
-    print(index_body)
     index_body = json.loads(index_body['tree_index_body'])
     return index_body
 
@@ -77,14 +76,13 @@ def create_tree_index(tree_root):
     :return: None
     """
     index_body = read_tree_index_setting()
+    delete_index('tree')
     es.indices.create(index='tree', body=index_body)
     tree = tree_parser.Tree(tree_root)
     tree_files = tree.get_p_files()
     for file in tree_files:
         file_content = tree.read_file(file)
-        print(file_content)
         file_body = tree.file_to_json(file[file.find('root'):], file_content)
-        print(file_body)
         es.index(index='tree', doc_type='tree_leaf', body=file_body, timeout='60m')
     return
 
