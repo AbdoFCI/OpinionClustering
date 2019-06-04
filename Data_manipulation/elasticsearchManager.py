@@ -77,7 +77,7 @@ def create_tree_index(tree_root):
     """
     index_body = read_tree_index_setting()
     delete_index('tree')
-    es.indices.create(index='tree', body=index_body)
+    es.indices.create(index='tree', body=index_body, timeout='60m')
     tree = tree_parser.Tree(tree_root)
     tree_files = tree.get_p_files()
     for file in tree_files:
@@ -93,7 +93,10 @@ def delete_index(index_name):
     :param index_name: str the name of the index
     :return: None
     """
-    es.indices.delete(index=index_name)
+    try:
+        es.indices.delete(index=index_name, timeout='60m')
+    except:
+        return
     return
 
 
