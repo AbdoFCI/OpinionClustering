@@ -10,8 +10,8 @@ es = Elasticsearch(['192.168.1.15'],
     sniff_on_start=True,
     # refresh nodes after a node fails to respond
     sniff_on_connection_fail=True,
-    # and also every 60 seconds
-    sniffer_timeout=60)
+    # and also every 10 seconds
+    sniffer_timeout=10, retry_on_timeout=True , maxsize=20)
 
 
 def read_index_setting(file_name='Data_manipulation\\config.ini', section='elasticsearch'):
@@ -77,13 +77,13 @@ def create_tree_index(tree_root):
     """
     index_body = read_tree_index_setting()
     delete_index('tree')
-    es.indices.create(index='tree', body=index_body, timeout='60m')
+    es.indices.create(index='tree', body=index_body, timeout='60m', request_timeout=3600)
     tree = tree_parser.Tree(tree_root)
     tree_files = tree.get_p_files()
     for file in tree_files:
         file_content = tree.read_file(file)
         file_body = tree.file_to_json(file[file.find('root'):], file_content)
-        es.index(index='tree', doc_type='tree_leaf', body=file_body, timeout='60m')
+        es.index(index='tree', doc_type='tree_leaf', body=file_body, timeout='60m', request_timeout=3600)
     return
 
 
