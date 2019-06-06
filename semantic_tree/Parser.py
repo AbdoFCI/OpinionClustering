@@ -73,10 +73,8 @@ class Tree:
         query_arabic = {
             'size': 10000,
             'query': {
-                "bool": {
-                    "filter": [
-                        {"term": {"arabichashtags" : tag }}
-                    ]
+                "match":{
+                    "arabichashtags" : tag
                 }
             }
         }
