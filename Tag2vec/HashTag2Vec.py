@@ -22,7 +22,7 @@ def avr_matrix(matrix):
     return np.average(matrix,axis=0)
 
 
-class HashTag2Vic:
+class HashTag2Vec:
     model = None
     vocab = None
     drop = None
