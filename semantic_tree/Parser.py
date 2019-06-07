@@ -2,9 +2,9 @@
 this file class tree that responsible for getting the directory url paths and get the distance between the nodes
 """
 import os
-import json
-from configparser import ConfigParser
 from Data_manipulation import elasticsearchManager
+import pandas as pd
+import pyarabic.araby as araby
 
 
 class Tree:
@@ -61,7 +61,7 @@ class Tree:
         :param path2: the second path
         :return: type int distance between the two paths
         """
-        if path2 == "" or path1 == "":
+        if not path2 or not path1:
             return 0
         path1 = path1.split("\\")
         path2 = path2.split("\\")
@@ -70,23 +70,56 @@ class Tree:
 
     def find_tag_path(self, tag):
         result = ""
-        query = {
+        query_arabic = {
             'size': 10000,
             'query': {
-                "bool": {
-                    "filter": [
-                        {"term": {"hashtags": tag}}
-                    ]
+                "match":{
+                    "arabichashtags" : tag
                 }
             }
         }
-        res = elasticsearchManager.es.search(index='tree', doc_type="tree_leaf", body=query)
+        query_english = {
+            'size': 10000,
+            'query': {
+                "match": {
+                    "englishhashtags": tag
+                }
+            }
+        }
+        res = elasticsearchManager.es.search(index='tree', doc_type="tree_leaf", body=query_arabic, timeout='60m')
+        if not res['hits']['hits']:
+            res = elasticsearchManager.es.search(index='tree', doc_type="tree_leaf", body=query_english, timeout='60m')
         data = [doc for doc in res['hits']['hits']]
-        result = data[0]['_source']['path']
+        if data:
+            result = data[0]['_source']['path']
+            return result
+        return None
+
+    def read_file(self, file_path):
+        result = set()
+        if file_path in self.files:
+            result = self.files[file_path]
+        else:
+            file = pd.read_excel(file_path)
+            file = set(file["tags"])
+            self.files[file_path] = file
+            result = self.files[file_path]
         return result
 
-    def file_to_json(self,file_path ,file_content):
-        return {"path":file_path, "hashtags":list(file_content)}
+    def find_last_index(self, string, character):
+
+        for i in range(len(string) - 1, -1, -1):
+            if string[i] == character:
+                return i
+        return -1
+
+    def file_to_json(self, file_path, file_content):
+        idx_last_char = self.find_last_index(file_path, '\\')
+        file_path = file_path[0:idx_last_char]
+        file_content = list(file_content)
+        if araby.is_arabicword(file_content[0]) or araby.is_arabicword(file_content[0][0]):
+            return {"path":file_path, "arabichashtags":list(file_content)}
+        return {"path":file_path, "englishhashtags":list(file_content)}
 
 
 class HashTagSimilarity:
@@ -94,14 +127,11 @@ class HashTagSimilarity:
     tag_base = ""
     roots = dict()
     tree = None
-    max_depth = 0
+    max_depth = 1
     tag_paths = dict()
 
     def __init__(self, tag_base=r"F:\my data\GP\root"):
         self.tag_base = tag_base
-        init = self.load_init(tag_base)
-        self.max_depth = int(init['max_depth'])
-        roots = json.loads(init['roots'])
         self.tree = Tree(tag_base)
 
     def set_root(self,root):
@@ -130,8 +160,12 @@ class HashTagSimilarity:
         tag1_path = self.get_path(tag1)
         tag2_path = self.get_path(tag2)
         distance = self.tree.calc_dist(tag1_path,tag2_path)
-        distance = distance /(len(tag1_path.split("\\"))+len(tag1_path.split("\\"))-2)
-        return 1-distance
+        if tag1_path and tag2_path:
+            self.max_depth = len(tag1_path.split("\\")) + len(tag2_path.split("\\")) - 2
+        else:
+            return 0.0
+        distance = distance / self.max_depth
+        return 1 - distance
 
     def get_list_similarity(self, first_list, second_list):
         """
