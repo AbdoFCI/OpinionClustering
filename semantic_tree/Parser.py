@@ -134,13 +134,6 @@ class HashTagSimilarity:
         self.tag_base = tag_base
         self.tree = Tree(tag_base)
 
-    def set_root(self,root):
-        if root in self.roots :
-            self.tree.root = self.roots[root]
-        else:
-            print("no root with this name")
-        return
-
     def get_path(self,tag):
         """
         this function first search in the memory if tag is loaded if not search using elasticsearch
