@@ -1,10 +1,7 @@
 from sklearn.cluster import AgglomerativeClustering
-import semantic_tree.Parser as pars
 import numpy as np
-import pandas as pd
 
-
-class AgglomerativeClustering:
+class Agglomerative:
 
     def __init__(self,similarity_method):
         """
@@ -25,9 +22,9 @@ class AgglomerativeClustering:
             for inner in opinions:
                 row.append(self.similarity_method(outer, inner))
             matrix.append(row)
-        return matrix
+        return 1 - np.matrix(matrix)
 
-    def cluster(self,tags,n_clusters=4,affinity='precomputed' ,linkage='complete'):
+    def cluster(self, tags, n_clusters=4, affinity='precomputed', linkage='complete'):
         """
 
         :param tags:list of list of str opinions data
@@ -37,6 +34,6 @@ class AgglomerativeClustering:
         :return: Labels of each point
         """
         dest_matrix = self._create_similarity_matrix(tags)
-        model = AgglomerativeClustering(affinity=affinity, n_clusters=n_clusters, linkage=linkage).\
+        model = AgglomerativeClustering(n_clusters=n_clusters, affinity=affinity, linkage=linkage).\
             fit_predict(dest_matrix)
         return list(model)

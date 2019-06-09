@@ -10,8 +10,8 @@ es = Elasticsearch(['192.168.1.15'],
     sniff_on_start=True,
     # refresh nodes after a node fails to respond
     sniff_on_connection_fail=True,
-    # and also every 60 seconds
-    sniffer_timeout=60)
+    # and also every 10 seconds
+    sniffer_timeout=10, retry_on_timeout=True , maxsize=20)
 
 
 def read_index_setting(file_name='Data_manipulation\\config.ini', section='elasticsearch'):
@@ -54,7 +54,6 @@ def read_tree_index_setting(file_name='Data_manipulation\\config.ini', section='
             index_body[item[0]] = item[1]
     else:
         raise Exception('{0} not found in the {1} file'.format(section, file_name))
-    print(index_body)
     index_body = json.loads(index_body['tree_index_body'])
     return index_body
 
@@ -77,15 +76,14 @@ def create_tree_index(tree_root):
     :return: None
     """
     index_body = read_tree_index_setting()
-    es.indices.create(index='tree', body=index_body)
+    delete_index('tree')
+    es.indices.create(index='tree', body=index_body, timeout='60m', request_timeout=3600)
     tree = tree_parser.Tree(tree_root)
     tree_files = tree.get_p_files()
     for file in tree_files:
         file_content = tree.read_file(file)
-        print(file_content)
         file_body = tree.file_to_json(file[file.find('root'):], file_content)
-        print(file_body)
-        es.index(index='tree', doc_type='tree_leaf', body=file_body, timeout='60m')
+        es.index(index='tree', doc_type='tree_leaf', body=file_body, timeout='60m', request_timeout=3600)
     return
 
 
@@ -95,7 +93,10 @@ def delete_index(index_name):
     :param index_name: str the name of the index
     :return: None
     """
-    es.indices.delete(index=index_name)
+    try:
+        es.indices.delete(index=index_name, timeout='60m')
+    except:
+        return
     return
 
 
