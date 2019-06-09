@@ -12,8 +12,7 @@ class ConnectedComponents:
         self.similarity_method = similarity_method
         self.sparkContext = spark_object.getSparkContext()
         self.sqlContext = spark_object.getSQLContext()
-        self.sparkContext.setCheckpointDir()
-
+        spark_object.setCheckpointDir()
 
     def _create_similarities_list(self, opinions, threshold=0.3):
         """
@@ -50,7 +49,7 @@ class ConnectedComponents:
         vertices_df = self.sqlContext.createDataFrame(vertices, ['id'])
 
         rdd_edges = self.sparkContext.parallelize(similarities_list)
-        filtered_edges = rdd_edges.filter(lambda edge: edge[2] <= init_threshold)
+        filtered_edges = rdd_edges.filter(lambda edge: edge[2] > init_threshold)
         edges_df = self.sqlContext.createDataFrame(filtered_edges, ['src', 'dst', 'Similarity'])
 
         graph = GraphFrame(vertices_df, edges_df)
@@ -58,9 +57,9 @@ class ConnectedComponents:
         num_components = result.select("component").distinct().count()
 
         th = init_threshold
-        while num_components < n_clusters:
+        while num_components < n_clusters and th + increment <= 1:
             th = th + increment
-            filtered_edges = filtered_edges.filter(lambda edge: edge[2] <= th)
+            filtered_edges = filtered_edges.filter(lambda edge: edge[2] > th)
             graph = GraphFrame(vertices_df, edges_df)
             result = graph.connectedComponents()
             num_components = result.select("component").distinct().count()

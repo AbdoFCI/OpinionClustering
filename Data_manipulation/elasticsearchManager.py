@@ -77,7 +77,7 @@ def create_tree_index(tree_root):
     """
     index_body = read_tree_index_setting()
     delete_index('tree')
-    es.indices.create(index='tree', body=index_body, timeout='60m', request_timeout=3600)
+    es.indices.create(index='tree', body=index_body, request_timeout=3600)
     tree = tree_parser.Tree(tree_root)
     tree_files = tree.get_p_files()
     for file in tree_files:
