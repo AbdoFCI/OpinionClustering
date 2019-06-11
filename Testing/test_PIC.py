@@ -4,8 +4,18 @@ from clustring_algorithms import pic
 from distance_measurement_algorithms import similarity_methods
 from Entities import SparkConnection
 
+sc = SparkConnection.SparkObject('spark')
+sc.setCheckpointDir()
 
-class TestAgglomarative(unittest.TestCase):
+def getClusters(s):
+    arr = []
+    maxx = max(s)
+    for clusterIndex in range(0,maxx+1):
+        indices = [i for i, x in enumerate(s) if x == clusterIndex]
+        arr.append(indices)
+    return arr
+
+class TestPIC(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print('setupClass\n')
@@ -27,7 +37,7 @@ class TestAgglomarative(unittest.TestCase):
             , ['الماجيكو', 'ابو_تريكه']]
 
         # similarity_methods: tag_jaccard
-        Obj = pic.PIC(similarity_methods.tag_jaccard_similarity_method,SparkConnection.SparkObject("appName"))
+        Obj = pic.PIC(similarity_methods.tag_jaccard_similarity_method,sc)
         np.testing.assert_array_equal(Obj._create_similarities_list(data), [(1, 1, 1.0), (1, 3, 0.2), (2, 2, 1.0),
                                                                             (2, 3, 0.25), (2, 4, 0.3333333333333333),
                                                                             (3, 1, 0.2), (3, 2, 0.25), (3, 3, 1.0),
@@ -73,3 +83,51 @@ class TestAgglomarative(unittest.TestCase):
                                                                             (3, 1, 0.6305304172951232), (3, 2, 0.540954415954416), (3, 3, 1),
                                                                             (3, 4, 0.5502822341057635), (4, 1, 0.5696958270487683),
                                                                             (4, 2, 0.9529411764705882), (4, 3, 0.5502822341057635), (4, 4, 1)])
+
+
+    def test_cluster(self):
+        data = [['بيبو', 'الخطيب', 'الاسطوره_المصريه']
+            , ['تريكه', 'الخطيب', 'ارهابى_القلوب']
+            , ['الماجيكو', 'ابو_تريكه']
+            , ['1', '2']
+            , ['2', '1']
+            , ['5', '6']
+            , ['6', '7']
+            , ['الماجيكو', 'تريكه']]
+
+        # similarity_methods: tag_jaccard
+        var = pic.PIC(similarity_methods.tag_jaccard_similarity_method, sc)
+        model = var.cluster(data)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[5, 6], [3, 4], [1, 2], [0,7]])
+
+        # similarity_methods: character_jaccard
+        var.similarity_method = similarity_methods.character_jaccard_similarity_method
+        model = var.cluster(data)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[5, 6], [0, 1, 7], [3, 4], [2]])
+
+        # similarity_methods: edit_distance
+        var.similarity_method = similarity_methods.edit_distance_method
+        model = var.cluster(data)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[3, 4, 5, 6], [0, 1], [7], [2]])
+
+        # similarity_methods: hamming
+        var.similarity_method = similarity_methods.hamming_similarity_method
+        model = var.cluster(data)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[0, 1]])
+
+        # similarity_methods: levenshtein
+        var.similarity_method = similarity_methods.levenshtein_similarity_method
+        model = var.cluster(data)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[2], [3], [0], [1]])
+
+        # similarity_methods: jaro_winkler
+        var.similarity_method = similarity_methods.jaro_winkler_similarity_method
+        model = var.cluster(data)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[2], [3], [0], [1]])
+
