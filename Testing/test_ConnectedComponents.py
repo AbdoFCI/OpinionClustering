@@ -4,7 +4,27 @@ from clustring_algorithms import ConnectedComponents
 from distance_measurement_algorithms import similarity_methods
 from Entities import SparkConnection
 
+sc = SparkConnection.SparkObject('spark')
+sc.setCheckpointDir()
 
+
+def getClusters(s):
+    arr = []
+    CInd = 0
+    lis = []
+    lis.append(s[0].id)
+    CInd = s[0].component
+    for i in range(1, len(s)):
+        if s[i].component == CInd:
+            lis.append(s[i].id)
+        else:
+            arr.append(lis)
+            lis = []
+            lis.append(s[i].id)
+            CInd = s[i].component
+
+    arr.append(lis)
+    return arr
 class TestConnectedComponents(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -27,7 +47,7 @@ class TestConnectedComponents(unittest.TestCase):
             , ['الماجيكو', 'ابو_تريكه']]
 
         # similarity_methods: tag_jaccard
-        Obj = ConnectedComponents.ConnectedComponents(similarity_methods.tag_jaccard_similarity_method,SparkConnection.SparkObject("appName"))
+        Obj = ConnectedComponents.ConnectedComponents(similarity_methods.tag_jaccard_similarity_method,sc)
         np.testing.assert_array_equal(Obj._create_similarities_list(data), [(1, 1, 1.0), (2, 2, 1.0), (2, 4, 0.3333333333333333),
                                                                              (3, 3, 1.0), (4, 2, 0.3333333333333333), (4, 4, 1.0)])
 
@@ -73,30 +93,56 @@ class TestConnectedComponents(unittest.TestCase):
         data = [['بيبو', 'الخطيب', 'الاسطوره_المصريه']
             , ['الماجيكو', 'تريكه']
             , ['تريكه', 'الخطيب', 'ارهابى_القلوب']
-            , ['الماجيكو', 'ابو_تريكه']]
+            , ['الماجيكو', 'ابو_تريكه']
+            , ['1', '2'], ['2', '1'], ['5', '6'], ['6', '7']]
 
-        """
-            when i run cluster with any similarity method and call result.show(), it gives me that
-            +---+---------+
-            | id|component|
-            +---+---------+
-            |  1|        1|
-            |  2|        1|
-            |  3|        1|
-            |  4|        1|
-            +---+---------+
-            
-            for row in k.select("id", "component").collect():
-                print(row)
-            
-            Row(id=1, component=1)
-            Row(id=2, component=1)
-            Row(id=3, component=1)
-            Row(id=4, component=1)
-            
-            so i don't know what to be returned and how to test it
+        # similarity_methods: tag_jaccard
+        Obj = ConnectedComponents.ConnectedComponents(similarity_methods.tag_jaccard_similarity_method, sc)
+        var = Obj.cluster(data,2)
+        var = var.sort('component')
+        model = getClusters(var.collect())
+        np.testing.assert_array_equal(model, [[1], [2, 4], [3], [5, 6], [7, 8]])
 
-        """
+        # similarity_methods: character_jaccard
+        Obj.similarity_method = similarity_methods.character_jaccard_similarity_method
+        var = Obj.cluster(data, 2)
+        var = var.sort('component')
+        model = getClusters(var.collect())
+        np.testing.assert_array_equal(model, [[1, 2, 3, 4], [5, 6], [7, 8]])
+
+        # similarity_methods: edit_distance
+        Obj.similarity_method = similarity_methods.edit_distance_method
+        var = Obj.cluster(data, 2)
+        var = var.sort('component')
+        model = getClusters(var.collect())
+        np.testing.assert_array_equal(model, [[1, 2, 3, 4, 5, 6, 7, 8]])
+
+        # similarity_methods: hamming
+        Obj.similarity_method = similarity_methods.hamming_similarity_method
+        var = Obj.cluster(data, 2)
+        var = var.sort('component')
+        model = getClusters(var.collect())
+        np.testing.assert_array_equal(model, [[1], [2, 4], [3], [5], [6], [7], [8]])
+
+        # similarity_methods: levenshtein
+        Obj.similarity_method = similarity_methods.levenshtein_similarity_method
+        var = Obj.cluster(data, 2)
+        var = var.sort('component')
+        model = getClusters(var.collect())
+        np.testing.assert_array_equal(model, [[1, 3], [2, 4], [5], [6], [7], [8]])
+
+        # similarity_methods: jaro_winkler
+        Obj.similarity_method = similarity_methods.jaro_winkler_similarity_method
+        var = Obj.cluster(data, 2)
+        var = var.sort('component')
+        model = getClusters(var.collect())
+        np.testing.assert_array_equal(model, [[1, 2, 3, 4], [5], [6], [7], [8]])
+
+
+
+
+
+
 
 
 
