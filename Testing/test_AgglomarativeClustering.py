@@ -3,6 +3,13 @@ import numpy as np
 from clustring_algorithms import AgglomerativeClustering
 from distance_measurement_algorithms import similarity_methods
 
+def getClusters(s):
+    arr = []
+    maxx = max(s)
+    for clusterIndex in range(0,maxx+1):
+        indices = [i for i, x in enumerate(s) if x == clusterIndex]
+        arr.append(indices)
+    return arr
 
 class TestAgglomarative(unittest.TestCase):
     @classmethod
@@ -68,27 +75,39 @@ class TestAgglomarative(unittest.TestCase):
 
         # similarity_methods: tag_jaccard
         Obj1 = AgglomerativeClustering.Agglomerative(similarity_methods.tag_jaccard_similarity_method)
-        np.testing.assert_array_equal(Obj1.cluster(data, 2), [0, 1, 0, 1])
+        model = Obj1.cluster(data, 2)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal( clusters , [[0,2],[1,3]])
 
         # similarity_methods: character_jaccard
         Obj2 = AgglomerativeClustering.Agglomerative(similarity_methods.character_jaccard_similarity_method)
-        np.testing.assert_array_equal(Obj2.cluster(data, 2), [0, 1, 0, 1])
+        model = Obj2.cluster(data, 2)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[0,2],[1,3]])
 
         # similarity_methods: edit_distance
         Obj3 = AgglomerativeClustering.Agglomerative(similarity_methods.edit_distance_method)
-        np.testing.assert_array_equal(Obj3.cluster(data, 2), [0, 1, 1, 0])
+        model = Obj3.cluster(data, 2)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[0,3],[1,2]])
 
         # similarity_methods: hamming
         Obj4 = AgglomerativeClustering.Agglomerative(similarity_methods.hamming_similarity_method)
-        np.testing.assert_array_equal(Obj4.cluster(data, 2), [0, 1, 0, 1])
+        model = Obj4.cluster(data, 2)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[0,2],[1,3]])
 
         # similarity_methods: levenshtein
         Obj5 = AgglomerativeClustering.Agglomerative(similarity_methods.levenshtein_similarity_method)
-        np.testing.assert_array_equal(Obj5.cluster(data, 2), [0, 1, 0, 1])
+        model = Obj5.cluster(data, 2)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[0,2],[1,3]])
 
         # similarity_methods: jaro_winkler
         Obj6 = AgglomerativeClustering.Agglomerative(similarity_methods.jaro_winkler_similarity_method)
-        np.testing.assert_array_equal(Obj6.cluster(data, 2), [0, 1, 0, 1])
+        model = Obj6.cluster(data, 2)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[0,2],[1,3]])
 
 
 
