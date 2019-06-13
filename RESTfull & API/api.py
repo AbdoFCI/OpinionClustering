@@ -6,6 +6,33 @@ from Entities import SparkConnection
 app = Flask(__name__)
 
 SparkObj = SparkConnection.SparkObject("appName")
+
+def Agglomerative_PIC_getClusters(s):
+    arr = []
+    maxx = max(s)
+    for clusterIndex in range(0,maxx+1):
+        indices = [i for i, x in enumerate(s) if x == clusterIndex]
+        arr.append(indices)
+    return arr
+
+def ConnectedComponents_getClusters(s):
+    arr = []
+    CInd = 0
+    lis = []
+    lis.append(s[0].id)
+    CInd = s[0].component
+    for i in range(1, len(s)):
+        if s[i].component == CInd:
+            lis.append(s[i].id)
+        else:
+            arr.append(lis)
+            lis = []
+            lis.append(s[i].id)
+            CInd = s[i].component
+
+    arr.append(lis)
+    return arr
+
 @app.route('/opinion_clustering/Agglomarative', methods=['GET'])
 def AgglomarativeCluster():
     json = request.json
@@ -81,7 +108,13 @@ def AgglomarativeCluster():
                 result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
                                       linkage=prerequests["linkage"])
 
-            #return section
+            Agglomerative_clusters = Agglomerative_PIC_getClusters(result)
+            return jsonify({"msg": """You are using agglomerative clustering with this characteristics:-
+                number of clusters: {:d},
+                affinity: {:s},
+                linkage: {:s}
+            """.format(k,prerequests["affinity"],prerequests["linkage"]),
+                            "clusters": Agglomerative_clusters })
 
     else:
         return jsonify({ "msg": "missing arguments to the url"})
@@ -168,7 +201,13 @@ def ConnectedComponentsCluster():
                 result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
                                       increment=prerequests["increment"])
 
-            return jsonify({"msg": "hwa run tmam aho", "result": "result"})
+            ConnectedComponent_clusters = ConnectedComponents_getClusters(result)
+            return jsonify({"msg": """You are using PIC clustering with this characteristics:-
+                                number of clusters: {:d},
+                                init_threshold: {:3f},
+                                increment: {:3f}
+                            """.format(k, prerequests["init_threshold"],prerequests["increment"]),
+                            "clusters": ConnectedComponent_clusters})
             # return section
 
     else:
@@ -251,7 +290,14 @@ def PICCluster():
                                       n_iterations=prerequests["n_iterations"],
                                       initialization_mode=prerequests["initialization_mode"])
 
-            # return section
+            PIC_clusters = Agglomerative_PIC_getClusters(result)
+            return jsonify({"msg": """You are using PIC clustering with this characteristics:-
+                            number of clusters: {:d},
+                            threshold: {:3f},
+                            number of iteration: {:d},
+                            initialization_mode: {:s}
+                        """.format(k, prerequests["threshold"],prerequests["n_iterations"],prerequests["initialization_mode"]),
+                            "clusters": PIC_clusters})
 
     else:
         return jsonify({ "msg": "missing arguments to the url"})
