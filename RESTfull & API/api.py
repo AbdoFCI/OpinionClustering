@@ -45,7 +45,7 @@ def AgglomarativeCluster():
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
     if "data" not in json:
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
-    if type(json["data"]).__name__ != 'dict':
+    if type(json["data"]).__name__ != 'list':
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
     data = json["data"]
     if "algorithm" in json:
@@ -107,6 +107,10 @@ def AgglomarativeCluster():
                 algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.jaro_winkler_similarity_method)
                 result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
                                       linkage=prerequests["linkage"])
+            elif algorithm_SM == "Tree":
+                algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.tree_similarity_method)
+                result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
+                                      linkage=prerequests["linkage"])
 
             Agglomerative_clusters = Agglomerative_PIC_getClusters(result)
             return jsonify({"msg": """You are using agglomerative clustering with this characteristics:-
@@ -132,8 +136,8 @@ def ConnectedComponentsCluster():
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
     if "data" not in json:
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
-    #if type(json["data"]).__name__ != 'dict':
-    #    return jsonify({"msg": "you should add list of hashtags for every opinion"})
+    if type(json["data"]).__name__ != 'list':
+        return jsonify({"msg": "you should add list of hashtags for every opinion"})
     data = json["data"]
     if "algorithm" in json:
 
@@ -201,6 +205,12 @@ def ConnectedComponentsCluster():
                 result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
                                       increment=prerequests["increment"])
 
+            elif algorithm_SM == "Tree":
+                algo = ConnectedComponents.ConnectedComponents(similarity_methods.tree_similarity_method,
+                                                               SparkObj)
+                result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
+                                      increment=prerequests["increment"])
+
             ConnectedComponent_clusters = ConnectedComponents_getClusters(result)
             return jsonify({"msg": """You are using PIC clustering with this characteristics:-
                                 number of clusters: {:d},
@@ -208,7 +218,7 @@ def ConnectedComponentsCluster():
                                 increment: {:3f}
                             """.format(k, prerequests["init_threshold"],prerequests["increment"]),
                             "clusters": ConnectedComponent_clusters})
-            # return section
+
 
     else:
         return jsonify({ "msg": "missing arguments to the url"})
@@ -226,7 +236,7 @@ def PICCluster():
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
     if "data" not in json:
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
-    if type(json["data"]).__name__ != 'dict':
+    if type(json["data"]).__name__ != 'list':
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
     data = json["data"]
     if "algorithm" in json:
@@ -289,6 +299,13 @@ def PICCluster():
                 result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
                                       n_iterations=prerequests["n_iterations"],
                                       initialization_mode=prerequests["initialization_mode"])
+
+            elif algorithm_SM == "Tree":
+                algo = pic.PIC(similarity_methods.tree_similarity_method,SparkObj)
+                result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
+                                      n_iterations=prerequests["n_iterations"],
+                                      initialization_mode=prerequests["initialization_mode"])
+
 
             PIC_clusters = Agglomerative_PIC_getClusters(result)
             return jsonify({"msg": """You are using PIC clustering with this characteristics:-
