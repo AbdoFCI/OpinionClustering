@@ -18,7 +18,7 @@ class KMeansClustering:
         :param method: str method used to compute the feature vector of hash-tags default (sum)
         :return: Labels of each point
         """
-        tag2vec = HashTag2Vec(permutation=permutation,permutation_drop=permutation_drop, method=method)
+        tag2vec = HashTag2Vec.HashTag2Vec(permutation=permutation,permutation_drop=permutation_drop, method=method)
         tag2vec.train(tags,window=6, alpha=0.03, epochs=10,vic_size=150,min_count=1)
         vectors = list(map(tag2vec.op2vec,tags))
         vec_rdd = self.sparkContext.parallelize(vectors)
