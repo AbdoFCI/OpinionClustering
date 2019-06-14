@@ -1,5 +1,5 @@
 import nltk
-#from semantic_tree import Parser
+from semantic_tree import Parser
 import textdistance
 
 
@@ -42,16 +42,16 @@ def edit_distance_method(list1,list2):
     return nltk.edit_distance(opinion1_str,opinion2_str)
 
 
-# def tree_similarity_method(list1,list2):
-#     """
-#     get the similarity between two lists using similarity tree
-#     :param list1: list of str
-#     :param list2: list of str
-#     :return: double
-#     """
-#
-#     sim = Parser.HashTagSimilarity()
-#     return sim.get_list_similarity(list1, list2)
+def tree_similarity_method(list1,list2):
+     """
+    get the similarity between two lists using similarity tree
+    :param list1: list of str
+    :param list2: list of str
+    :return: double
+    """
+     sim = Parser.HashTagSimilarity()
+     return sim.get_list_similarity(list1, list2)
+
 
 
 def hamming_similarity_method(list1, list2):

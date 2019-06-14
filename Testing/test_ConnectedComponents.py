@@ -65,9 +65,14 @@ class TestConnectedComponents(unittest.TestCase):
                                                                             (2, 3, 21),(2, 4, 4), (3, 1, 16), (3, 2, 21),
                                                                             (3, 4, 19), (4, 1, 19), (4, 2, 4), (4, 3, 19)])
 
-        """# similarity_methods: tree
-        #Obj4 = ConnectedComponents.ConnectedComponents(similarity_methods.tree_similarity_method,SparkConnection.SparkObject("appName"))
-        #np.testing.assert_array_equal(Obj4._create_similarities_list(data), )"""
+        # similarity_methods: tree
+        Obj.similarity_method = similarity_methods.tree_similarity_method
+        np.testing.assert_array_equal(Obj._create_similarities_list(data),[(1, 1, 0.4444444444444444), (1, 2, 0.5833333333333334),
+                                                                           (1, 3, 0.4166666666666667), (1, 4, 0.5833333333333334),
+                                                                           (2, 1, 0.5833333333333334), (2, 2, 1.0), (2, 3, 0.625),
+                                                                           (2, 4, 1.0), (3, 1, 0.4166666666666667), (3, 2, 0.625),
+                                                                           (3, 3, 0.4166666666666667), (3, 4, 0.625), (4, 1, 0.5833333333333334),
+                                                                           (4, 2, 1.0), (4, 3, 0.625), (4, 4, 1.0)] )
 
         # similarity_methods: hamming
         Obj.similarity_method = similarity_methods.hamming_similarity_method
@@ -133,6 +138,13 @@ class TestConnectedComponents(unittest.TestCase):
 
         # similarity_methods: jaro_winkler
         Obj.similarity_method = similarity_methods.jaro_winkler_similarity_method
+        var = Obj.cluster(data, 2)
+        var = var.sort('component')
+        model = getClusters(var.collect())
+        np.testing.assert_array_equal(model, [[1, 2, 3, 4], [5], [6], [7], [8]])
+
+        # similarity_methods: tree
+        Obj.similarity_method = similarity_methods.tree_similarity_method
         var = Obj.cluster(data, 2)
         var = var.sort('component')
         model = getClusters(var.collect())

@@ -62,6 +62,11 @@ class TestAgglomarative(unittest.TestCase):
         Obj6 = AgglomerativeClustering.Agglomerative(similarity_methods.jaro_winkler_similarity_method)
         np.testing.assert_array_equal(Obj6._create_similarity_matrix(data).tolist(), np.matrix(out6).tolist())
 
+        # similarity_method: tree
+        out7 = [[0.5555555555555556, 0.41666666666666663, 0.5833333333333333, 0.41666666666666663], [0.41666666666666663, 0.0, 0.375, 0.0], [0.5833333333333333, 0.375, 0.5833333333333333, 0.375], [0.41666666666666663, 0.0, 0.375, 0.0]]
+        Obj7 = AgglomerativeClustering.Agglomerative(similarity_methods.tree_similarity_method)
+        np.testing.assert_array_equal(Obj7._create_similarity_matrix(data).tolist(), np.matrix(out7).tolist())
+
 
 
 
@@ -109,6 +114,11 @@ class TestAgglomarative(unittest.TestCase):
         clusters = getClusters(model)
         np.testing.assert_array_equal(clusters, [[0,2],[1,3]])
 
+        # similarity_methods: tree
+        Obj7 = AgglomerativeClustering.Agglomerative(similarity_methods.tree_similarity_method)
+        model = Obj7.cluster(data, 2)
+        clusters = getClusters(model)
+        np.testing.assert_array_equal(clusters, [[1, 2, 3], [0]])
 
 
 if __name__ == '__main__':

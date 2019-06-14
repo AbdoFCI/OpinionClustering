@@ -57,9 +57,11 @@ class TestPIC(unittest.TestCase):
                                                                             (2, 3, 21), (2, 4, 4), (3, 1, 16), (3, 2, 21),
                                                                             (3, 4, 19), (4, 1, 19), (4, 2, 4), (4, 3, 19)])
 
-        """# similarity_methods: tree
-        Obj.similarity_method = similarity_methods.tree
-        #np.testing.assert_array_equal(Obj._create_similarities_list(data), )"""
+        # similarity_methods: tree
+        Obj.similarity_method = similarity_methods.tree_similarity_method
+        np.testing.assert_array_equal(Obj._create_similarities_list(data), [(1, 1, 1.0), (1, 3, 0.2), (2, 2, 1.0), (2, 3, 0.25),
+                                                                            (2, 4, 0.3333333333333333), (3, 1, 0.2), (3, 2, 0.25),
+                                                                            (3, 3, 1.0), (4, 2, 0.3333333333333333), (4, 4, 1.0)])
 
         # similarity_methods: hamming
         Obj.similarity_method = similarity_methods.hamming_similarity_method
@@ -130,4 +132,11 @@ class TestPIC(unittest.TestCase):
         model = var.cluster(data)
         clusters = getClusters(model)
         np.testing.assert_array_equal(clusters, [[2], [3], [0], [1]])
+
+        # similarity_methods: tree
+        var.similarity_method = similarity_methods.tree_similarity_method
+        model = var.cluster(data)
+        clusters = getClusters(model)
+        print(clusters)
+        np.testing.assert_array_equal(clusters, [[2, 3], [0], [1]])
 
