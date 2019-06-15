@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 SparkObj = SparkConnection.SparkObject("appName")
 
-def Agglomerative_PIC_getClusters(s):
+def Agglomerative_PIC_sparkKmean_getClusters(s):
     arr = []
     maxx = max(s)
     for clusterIndex in range(0,maxx+1):
@@ -112,7 +112,7 @@ def AgglomarativeCluster():
                 result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
                                       linkage=prerequests["linkage"])
 
-            Agglomerative_clusters = Agglomerative_PIC_getClusters(result)
+            Agglomerative_clusters = Agglomerative_PIC_sparkKmean_getClusters(result)
             return jsonify({"msg": """You are using agglomerative clustering with this characteristics:-
                 number of clusters: {:d},
                 affinity: {:s},
@@ -307,7 +307,7 @@ def PICCluster():
                                       initialization_mode=prerequests["initialization_mode"])
 
 
-            PIC_clusters = Agglomerative_PIC_getClusters(result)
+            PIC_clusters = Agglomerative_PIC_sparkKmean_getClusters(result)
             return jsonify({"msg": """You are using PIC clustering with this characteristics:-
                             number of clusters: {:d},
                             threshold: {:3f},
@@ -357,11 +357,19 @@ def KmeanCluster():
             if prerequests["method"] == "not in":
                 return jsonify({'msg': 'you should choose method from these (sum, average)'})
 
-            algo = sparkKmeans.KMeansClustering(SparkConnection.SparkObject("appName"))
+            algo = sparkKmeans.KMeansClustering(SparkObj)
             result = algo.cluster(tags=data, n_clusters=k, permutation=prerequests["permutation"], permutation_drop=0.5,
-                                  method=prerequests["permutation"])
+                                  method=prerequests["method"])
 
-            #return section
+            KmeansCluster = Agglomerative_PIC_sparkKmean_getClusters(result)
+            return jsonify({"msg": """You are using spark Kmeans clustering with this characteristics:-
+                                        number of clusters: {:d},
+                                        permutation: {:b},
+                                        permutation drop: {:3f},
+                                        method: {:s}
+                                    """.format(k, prerequests["permutation"], 0.5,
+                                               prerequests["method"]),
+                            "clusters": KmeansCluster})
 
     else:
         return jsonify({ "msg": "missing arguments to the url"})
