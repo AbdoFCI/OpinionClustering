@@ -279,7 +279,7 @@ def PICCluster():
             algorithm_SM = check_similarity_method(json)
 
             if algorithm_SM == "not in":
-                return jsonify({'msg': 'Your similarityMethod is not found ! you can choose one of these (TagJaccard, CharJaccard, EditDistance, Tree)'})
+                return jsonify({'msg': 'Your similarityMethod is not found ! you can choose one of these (TagJaccard, CharJaccard, EditDistance, Tree, Hamming, Levenshtein, JaroWinkler)'})
 
             prerequests = check_PIC_prerequests(json)
 
