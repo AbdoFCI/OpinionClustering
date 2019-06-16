@@ -10,16 +10,16 @@ class Agglomerative:
         """
         self.similarity_method = similarity_method
 
-    def _create_similarity_matrix(self, opinions):
+    def _create_similarity_matrix(self, tags):
         """
 
-        :param opinions:list of list of str
+        :param tags: list of list of str
         :return: np.matrix n*n, n = len(opinion)
         """
         matrix = []
-        for outer in opinions:
+        for outer in tags:
             row = []
-            for inner in opinions:
+            for inner in tags:
                 row.append(self.similarity_method(outer, inner))
             matrix.append(row)
         return 1 - np.matrix(matrix)
@@ -27,11 +27,11 @@ class Agglomerative:
     def cluster(self, tags, n_clusters=4, affinity='precomputed', linkage='complete'):
         """
 
-        :param tags:list of list of str opinions data
-        :param n_clusters:number of clusters 3-9 clusters default (4)
-        :param affinity:string or callable, default: “euclidean”
-        :param linkage:str {“ward”, “complete”, “average”, “single”}, optional (default=”complete”)
-        :return: Labels of each point
+        :param tags: list of list of str opinions data
+        :param n_clusters: number of clusters 3-9 clusters default (4)
+        :param affinity: string or callable, default: “precomputed”
+        :param linkage: str {“ward”, “complete”, “average”, “single”}, optional (default=”complete”)
+        :return: model: Labels of each point
         """
         dest_matrix = self._create_similarity_matrix(tags)
         model = AgglomerativeClustering(n_clusters=n_clusters, affinity=affinity, linkage=linkage).\
