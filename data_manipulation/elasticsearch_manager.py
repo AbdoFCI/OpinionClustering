@@ -1,11 +1,11 @@
 from elasticsearch import Elasticsearch
 import json
 from configparser import ConfigParser
-from entities import opinion
+from entities import Opinion
 from data_manipulation import mysql_manager
 import semantic_tree.parser as tree_parser
 
-es = Elasticsearch(
+es = Elasticsearch(['192.168.1.15'],
     # sniff before doing anything
     sniff_on_start=True,
     # refresh nodes after a node fails to respond
