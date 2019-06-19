@@ -2,7 +2,7 @@
 this file class tree that responsible for getting the directory url paths and get the distance between the nodes
 """
 import os
-from Data_manipulation import elasticsearchManager
+from data_manipulation import elasticsearch_manager
 import pandas as pd
 import pyarabic.araby as araby
 
@@ -17,6 +17,7 @@ class Tree:
 
     def get_p_files(self):
         """
+
         this function get all file paths in the file system starting from the root
         :return: type list all the file paths in the file system
         """
@@ -29,6 +30,7 @@ class Tree:
 
     def get_p_dirs(self):
         """
+
         this function returns all directories in the file system starting from the root
         :return: type list all the file paths in the file system
         """
@@ -69,6 +71,11 @@ class Tree:
         return result
 
     def find_tag_path(self, tag):
+        """
+
+        :param tag:
+        :return:
+        """
         result = ""
         query_arabic = {
             'size': 10000,
@@ -85,10 +92,10 @@ class Tree:
                     "englishhashtags": tag
                 }
             }
-        }
-        res = elasticsearchManager.es.search(index='tree', doc_type="tree_leaf", body=query_arabic, timeout='60m')
+        }#, doc_type="tree_leaf"
+        res = elasticsearch_manager.es.search(index='tree', body=query_arabic, timeout='60m')
         if not res['hits']['hits']:
-            res = elasticsearchManager.es.search(index='tree', doc_type="tree_leaf", body=query_english, timeout='60m')
+            res = elasticsearch_manager.es.search(index='tree', body=query_english, timeout='60m')
         data = [doc for doc in res['hits']['hits']]
         if data:
             result = data[0]['_source']['path']
@@ -96,6 +103,11 @@ class Tree:
         return None
 
     def read_file(self, file_path):
+        """
+
+        :param file_path:
+        :return:
+        """
         result = set()
         if file_path in self.files:
             result = self.files[file_path]
@@ -107,6 +119,12 @@ class Tree:
         return result
 
     def find_last_index(self, string, character):
+        """
+
+        :param string:
+        :param character:
+        :return:
+        """
 
         for i in range(len(string) - 1, -1, -1):
             if string[i] == character:
@@ -114,6 +132,12 @@ class Tree:
         return -1
 
     def file_to_json(self, file_path, file_content):
+        """
+
+        :param file_path:
+        :param file_content:
+        :return:
+        """
         idx_last_char = self.find_last_index(file_path, '\\')
         file_path = file_path[0:idx_last_char]
         file_content = list(file_content)
@@ -136,6 +160,7 @@ class HashTagSimilarity:
 
     def get_path(self,tag):
         """
+
         this function first search in the memory if tag is loaded if not search using elasticsearch
         :param tag: str
         :return: str
@@ -150,6 +175,12 @@ class HashTagSimilarity:
         return tag_path
 
     def get_similarity(self,tag1,tag2):
+        """
+
+        :param tag1:
+        :param tag2:
+        :return:
+        """
         tag1_path = self.get_path(tag1)
         tag2_path = self.get_path(tag2)
         distance = self.tree.calc_dist(tag1_path,tag2_path)
@@ -162,6 +193,7 @@ class HashTagSimilarity:
 
     def get_list_similarity(self, first_list, second_list):
         """
+
         taking two lists and compute the similarity between them
         :param first_list: List
         :param second_list: :List

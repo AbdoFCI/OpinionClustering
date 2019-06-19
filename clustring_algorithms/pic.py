@@ -6,19 +6,20 @@ class PIC:
     def __init__(self, similarity_method, spark_object):
         """
 
+        :param spark_object: SparkConnections object
         :param similarity_method: example tree_similarity , jaccard, edit distance
         """
 
         self.similarity_method = similarity_method
-        self.sparkContext = spark_object.getSparkContext()
-        self.sqlContext = spark_object.getSQLContext()
+        self.sparkContext = spark_object.get_spark_context()
+        self.sqlContext = spark_object.get_sql_context()
 
     def _create_similarities_list(self, opinions, threshold=0.05):
         """
 
         :param opinions: list of vector of string
         :param threshold: double
-        :return: similarities list : list of tuples
+        :return: similarities_list : list of tuples
         """
         similarities_list = []
         outer_id = 0
@@ -41,7 +42,7 @@ class PIC:
         :param threshold: double
         :param n_iterations: number of iterations
         :param initialization_mode: string ("degree", "random")
-        :return: model
+        :return: model: Labels of each point
         """
         similarities_list = self._create_similarities_list(tags, threshold=threshold)
         rdd_data = self.sparkContext.parallelize(similarities_list)

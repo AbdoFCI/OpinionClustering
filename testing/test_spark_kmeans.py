@@ -1,16 +1,16 @@
-from Entities import SparkConnection
-from clustring_algorithms import sparkKmeans
+from entities import spark_connection
+from clustring_algorithms import spark_kmeans
 import unittest
 import numpy as np
 
 
-def getClusters(s):
-    arr = []
-    maxx = max(s)
-    for clusterIndex in range(0,maxx+1):
-        indices = [i for i, x in enumerate(s) if x == clusterIndex]
-        arr.append(indices)
-    return arr
+def get_clusters(model):
+    clusters_lists = []
+    maxx = max(model)
+    for clusterIndex in range(0, maxx + 1):
+        indices = [i for i, x in enumerate(model) if x == clusterIndex]
+        clusters_lists.append(indices)
+    return clusters_lists
 
 class TestAgglomarative(unittest.TestCase):
     @classmethod
@@ -36,11 +36,11 @@ class TestAgglomarative(unittest.TestCase):
             , ['5', '6']
             , ['6', '7']
             , ['الماجيكو', 'تريكه']]
-        sc = SparkConnection.SparkObject('spark')
-        sc.setCheckpointDir()
+        spark_connections = spark_connection.SparkObject('spark')
+        spark_connections.set_checkpoint_dir()
 
-        Obj = sparkKmeans.KMeansClustering(sc)
-        model = Obj.cluster(data,4)
-        clusters = getClusters(model)
+        obj = spark_kmeans.KMeansClustering(spark_connections)
+        model = obj.cluster(data,4)
+        clusters = get_clusters(model)
         clusters.sort()
         np.testing.assert_array_equal(clusters,[[0, 1], [2, 7], [3, 4], [5, 6]])

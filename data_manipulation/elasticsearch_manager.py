@@ -1,11 +1,11 @@
 from elasticsearch import Elasticsearch
 import json
 from configparser import ConfigParser
-from Entities import Opinion
-from Data_manipulation import mysqlManager
-import semantic_tree.Parser as tree_parser
+from entities import opinion
+from data_manipulation import mysql_manager
+import semantic_tree.parser as tree_parser
 
-es = Elasticsearch(['192.168.1.15'],
+es = Elasticsearch(
     # sniff before doing anything
     sniff_on_start=True,
     # refresh nodes after a node fails to respond
@@ -14,12 +14,13 @@ es = Elasticsearch(['192.168.1.15'],
     sniffer_timeout=10, retry_on_timeout=True , maxsize=20)
 
 
-def read_index_setting(file_name='Data_manipulation\\config.ini', section='elasticsearch'):
+def read_index_setting(file_name='data_manipulation\\config.ini', section='elasticsearch'):
     """
+
     Read Elastic index settings configuration file
     :param file_name: str path of configuration file
     :param section : str the name of the section
-    :return: dictionary
+    :return: index_body: dictionary
     """
     # create parser and read ini configuration file
     parser = ConfigParser()
@@ -36,12 +37,13 @@ def read_index_setting(file_name='Data_manipulation\\config.ini', section='elast
     return index_body
 
 
-def read_tree_index_setting(file_name='Data_manipulation\\config.ini', section='tree'):
+def read_tree_index_setting(file_name='data_manipulation\\config.ini', section='tree'):
     """
+
     Read tree index settings configuration file for Elastic search
     :param file_name: str path of the tree configuration file
     :param section: str the name of section in the file
-    :return: dictionary
+    :return: index_body: dictionary
     """
     # create parser and read ini configuration file
     parser = ConfigParser()
@@ -60,6 +62,7 @@ def read_tree_index_setting(file_name='Data_manipulation\\config.ini', section='
 
 def create_index(index_name):
     """
+
     Create an index with configuration in the configuration file
     :param index_name: str index name
     :return: None
@@ -71,6 +74,7 @@ def create_index(index_name):
 
 def create_tree_index(tree_root):
     """
+
     create the tree index with the configuration in the configuration file
     :param tree_root: str path of the tree root folder
     :return: None
@@ -89,6 +93,7 @@ def create_tree_index(tree_root):
 
 def delete_index(index_name):
     """
+
     Delete an index from elastic search
     :param index_name: str the name of the index
     :return: None
@@ -102,6 +107,7 @@ def delete_index(index_name):
 
 def insert_opinion(index_name, opinion):
     """
+
     indexing an opinion in elastic search index
     :param index_name: str
     :param opinion: opinion
@@ -114,9 +120,10 @@ def insert_opinion(index_name, opinion):
 
 def get_opinions(index_name):
     """
+
     Get 10000 opinions from an index
     :param index_name: str
-    :return: list of opinions
+    :return: opinion_list: list of opinions
     """
     opinion_list = []
     query = {
@@ -128,7 +135,7 @@ def get_opinions(index_name):
     res = es.search(index=index_name, doc_type="op", body=query)
     data = [doc for doc in res['hits']['hits']]
     for doc in data:
-        temp = Opinion.Opinion()
+        temp = opinion.Opinion()
         temp.json_to_opinion(doc['_source'])
         opinion_list.append(temp)
     return opinion_list
@@ -136,10 +143,11 @@ def get_opinions(index_name):
 
 def analyze_hashtag(index_name, hashtag):
     """
+
     Normalize hashtag
     :param index_name: str
     :param hashtag: str
-    :return: str normalized hashtag
+    :return: result_string: str normalized hashtag
     """
     analyzer = {
         "analyzer": "arabicAnalyzer",
@@ -155,10 +163,11 @@ def analyze_hashtag(index_name, hashtag):
 
 def analyze_opinion(index_name, hashtag_list):
     """
+
     Normalize a list of hashtags
     :param index_name: str
     :param hashtag_list: list of str
-    :return: list of str
+    :return: analyzed_list: list of str
     """
     analyzed_list = []
     for hashtag in hashtag_list:
@@ -168,10 +177,11 @@ def analyze_opinion(index_name, hashtag_list):
 
 def analyze_all_opinions(index_name, opinion_list):
     """
+
     Normalize all lists of hashtags for a list of opinions
     :param index_name: str
     :param opinion_list: list of opinions
-    :return: list of opinions
+    :return: opinion_list: list of opinions
     """
     for index in range(len(opinion_list)):
         opinion_list[index].hash_tags = analyze_opinion(index_name, opinion_list[index].hash_tags)
@@ -180,15 +190,16 @@ def analyze_all_opinions(index_name, opinion_list):
 
 def from_sql_to_elastcsearch():
     """
+
     Copying the discussions from mysql Database to elastic search by making index for each discussion by its name
     :return: None
     """
-    discussions_list = mysqlManager.get_discussions()
+    discussions_list = mysql_manager.get_discussions()
     for discussion in discussions_list:
         d_id = discussion[0]
         d_name = discussion[4]
         d_name = d_name.replace(' ', '_')
-        opinion_list = mysqlManager.get_opinions(d_id)
+        opinion_list = mysql_manager.get_opinions(d_id)
         create_index(d_name)
         opinion_list = analyze_all_opinions(d_name, opinion_list)
         for opinion in opinion_list:

@@ -1,53 +1,70 @@
 from flask import Flask, request, jsonify
-from clustring_algorithms import AgglomerativeClustering, ConnectedComponents, pic, sparkKmeans
-from distance_measurement_algorithms import similarity_methods
-from Entities import SparkConnection
+from clustring_algorithms import agglomerative_clustering, connected_components, pic, spark_kmeans
+from distance_measurement import similarity_methods
+from entities import spark_connection
 
 app = Flask(__name__)
 
-SparkObj = SparkConnection.SparkObject("appName")
+SparkObj = spark_connection.SparkObject("appName")
 
-def Agglomerative_PIC_sparkKmean_getClusters(s):
-    arr = []
-    maxx = max(s)
+def Agglomerative_PIC_sparkKmean_getClusters(model):
+    """
+
+    :param model: list of Label of each point
+    :return: clusters_lists: list of lists of clusters
+    """
+    clusters_lists = []
+    maxx = max(model)
     for clusterIndex in range(0,maxx+1):
-        indices = [i for i, x in enumerate(s) if x == clusterIndex]
-        arr.append(indices)
-    return arr
+        indices = [i for i, x in enumerate(model) if x == clusterIndex]
+        clusters_lists.append(indices)
+    return clusters_lists
 
-def ConnectedComponents_getClusters(s):
-    arr = []
-    CInd = 0
-    lis = []
-    lis.append(s[0].id)
-    CInd = s[0].component
-    for i in range(1, len(s)):
-        if s[i].component == CInd:
-            lis.append(s[i].id)
+def ConnectedComponents_getClusters(model):
+    """
+
+    :param model: dataframe carries id and lable of each point
+    :return: clusters_lists: list of lists of clusters
+    """
+    clusters_lists = []
+    cluster_index = 0
+    opinion_indexs = []
+    opinion_indexs.append(model[0].id)
+    cluster_index = model[0].component
+    for i in range(1, len(model)):
+        if model[i].component == cluster_index:
+            opinion_indexs.append(model[i].id)
         else:
-            arr.append(lis)
-            lis = []
-            lis.append(s[i].id)
-            CInd = s[i].component
+            clusters_lists.append(opinion_indexs)
+            opinion_indexs = []
+            opinion_indexs.append(model[i].id)
+            cluster_index = model[i].component
 
-    arr.append(lis)
-    return arr
+    clusters_lists.append(opinion_indexs)
+    return clusters_lists
 
 @app.route('/opinion_clustering/Agglomarative', methods=['GET'])
 def AgglomarativeCluster():
+
     json = request.json
-    k = 2
+    clusters_number = 2
+
     if "k" in json:
-        k = json["k"]
-        if type(k).__name__ != 'int':
+        clusters_number = json["k"]
+        if type(clusters_number).__name__ != 'int':
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
-        elif k < 2:
+
+        elif clusters_number < 2:
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
+
     if "data" not in json:
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
+
     if type(json["data"]).__name__ != 'list':
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
-    data = json["data"]
+
+    tags = json["data"]
+
     if "algorithm" in json:
 
         if "name" not in json["algorithm"]:
@@ -73,52 +90,51 @@ def AgglomarativeCluster():
                 return jsonify({'msg': 'you should choose affinty from these (euclidean, l1, l2, manhattan, cosine, precomputed)'})
 
             if algorithm_SM == "TagJaccard":
-                algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.tag_jaccard_similarity_method)
-                result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
+                agglomerative_obj = agglomerative_clustering.Agglomerative(similarity_methods.tag_jaccard_similarity_method)
+                result = agglomerative_obj.cluster(tags=tags, n_clusters=clusters_number, affinity=prerequests["affinity"],
                                       linkage=prerequests["linkage"])
 
             elif algorithm_SM == "CharJaccard":
-                algo = AgglomerativeClustering.AgglomerativeClustering(
+                agglomerative_obj = agglomerative_clustering.Agglomerative(
                     similarity_methods.character_jaccard_similarity_method)
-                result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
+                result = agglomerative_obj.cluster(tags=tags, n_clusters=clusters_number, affinity=prerequests["affinity"],
                                       linkage=prerequests["linkage"])
 
             elif algorithm_SM == "EditDistance":
-                algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.edit_distance_method)
-                result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
-                                      linkage=prerequests["linkage"])
-
-            elif algorithm_SM == "Tree":
-                algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.tree_similarity_method)
-                result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
+                agglomerative_obj = agglomerative_clustering.Agglomerative(similarity_methods.edit_distance_method)
+                result = agglomerative_obj.cluster(tags=tags, n_clusters=clusters_number, affinity=prerequests["affinity"],
                                       linkage=prerequests["linkage"])
 
             elif algorithm_SM == "Hamming":
-                algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.hamming_similarity_method)
-                result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
+                agglomerative_obj = agglomerative_clustering.Agglomerative(similarity_methods.hamming_similarity_method)
+                result = agglomerative_obj.cluster(tags=tags, n_clusters=clusters_number, affinity=prerequests["affinity"],
                                       linkage=prerequests["linkage"])
 
             elif algorithm_SM == "Levenshtein":
-                algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.levenshtein_similarity_method)
-                result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
+                agglomerative_obj = agglomerative_clustering.Agglomerative(similarity_methods.levenshtein_similarity_method)
+                result = agglomerative_obj.cluster(tags=tags, n_clusters=clusters_number, affinity=prerequests["affinity"],
                                       linkage=prerequests["linkage"])
 
             elif algorithm_SM == "JaroWinkler":
-                algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.jaro_winkler_similarity_method)
-                result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
-                                      linkage=prerequests["linkage"])
-            elif algorithm_SM == "Tree":
-                algo = AgglomerativeClustering.AgglomerativeClustering(similarity_methods.tree_similarity_method)
-                result = algo.cluster(tags=data, n_clusters=k, affinity=prerequests["affinity"],
+                agglomerative_obj = agglomerative_clustering.Agglomerative(similarity_methods.jaro_winkler_similarity_method)
+                result = agglomerative_obj.cluster(tags=tags, n_clusters=clusters_number, affinity=prerequests["affinity"],
                                       linkage=prerequests["linkage"])
 
-            Agglomerative_clusters = Agglomerative_PIC_sparkKmean_getClusters(result)
+            elif algorithm_SM == "Tree":
+                agglomerative_obj = agglomerative_clustering.Agglomerative(similarity_methods.tree_similarity_method)
+                result = agglomerative_obj.cluster(tags=tags, n_clusters=clusters_number, affinity=prerequests["affinity"],
+                                      linkage=prerequests["linkage"])
+
+            agglomerative_clusters = Agglomerative_PIC_sparkKmean_getClusters(result)
             return jsonify({"msg": """You are using agglomerative clustering with this characteristics:-
                 number of clusters: {:d},
                 affinity: {:s},
                 linkage: {:s}
-            """.format(k,prerequests["affinity"],prerequests["linkage"]),
-                            "clusters": Agglomerative_clusters })
+            """.format(clusters_number,prerequests["affinity"],prerequests["linkage"]),
+                            "clusters": agglomerative_clusters })
+
+        else:
+            return jsonify({"msg": "missing arguments to the url"})
 
     else:
         return jsonify({ "msg": "missing arguments to the url"})
@@ -126,19 +142,27 @@ def AgglomarativeCluster():
 
 @app.route('/opinion_clustering/Connected_components', methods=['GET'])
 def ConnectedComponentsCluster():
+
     json = request.json
-    k = 2
+    clusters_number = 2
+
     if "k" in json:
-        k = json["k"]
-        if type(k).__name__ != 'int':
+        clusters_number = json["k"]
+
+        if type(clusters_number).__name__ != 'int':
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
-        elif k < 2:
+
+        elif clusters_number < 2:
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
+
     if "data" not in json:
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
+
     if type(json["data"]).__name__ != 'list':
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
-    data = json["data"]
+
+    tags = json["data"]
+
     if "algorithm" in json:
 
         if "name" not in json["algorithm"]:
@@ -164,60 +188,57 @@ def ConnectedComponentsCluster():
                 return jsonify({'msg': 'you should choose init_threshold 0 to 1'})
 
             if algorithm_SM == "TagJaccard":
-                algo = ConnectedComponents.ConnectedComponents(similarity_methods.tag_jaccard_similarity_method,
-                                                               SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
+                connected_components_obj = connected_components.ConnectedComponents(similarity_methods.tag_jaccard_similarity_method,
+                                                                SparkObj)
+                result = connected_components_obj.cluster(tags=tags, n_clusters=clusters_number, init_threshold=prerequests["init_threshold"],
                                       increment=prerequests["increment"])
 
             elif algorithm_SM == "CharJaccard":
-                algo = ConnectedComponents.ConnectedComponents(similarity_methods.character_jaccard_similarity_method,
-                                                               SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
+                connected_components_obj = connected_components.ConnectedComponents(similarity_methods.character_jaccard_similarity_method,
+                                                                SparkObj)
+                result = connected_components_obj.cluster(tags=tags, n_clusters=clusters_number, init_threshold=prerequests["init_threshold"],
                                       increment=prerequests["increment"])
 
             elif algorithm_SM == "EditDistance":
-                algo = ConnectedComponents.ConnectedComponents(similarity_methods.edit_distance_method,
-                                                               SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
-                                      increment=prerequests["increment"])
-
-            elif algorithm_SM == "Tree":
-                algo = ConnectedComponents.ConnectedComponents(similarity_methods.tree_similarity_method,
-                                                               SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
+                connected_components_obj = connected_components.ConnectedComponents(similarity_methods.edit_distance_method,
+                                                                SparkObj)
+                result = connected_components_obj.cluster(tags=tags, n_clusters=clusters_number, init_threshold=prerequests["init_threshold"],
                                       increment=prerequests["increment"])
 
             elif algorithm_SM == "Hamming":
-                algo = ConnectedComponents.ConnectedComponents(similarity_methods.hamming_similarity_method,
-                                                               SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
+                connected_components_obj = connected_components.ConnectedComponents(similarity_methods.hamming_similarity_method,
+                                                                SparkObj)
+                result = connected_components_obj.cluster(tags=tags, n_clusters=clusters_number, init_threshold=prerequests["init_threshold"],
                                       increment=prerequests["increment"])
 
             elif algorithm_SM == "Levenshtein":
-                algo = ConnectedComponents.ConnectedComponents(similarity_methods.levenshtein_similarity_method,
-                                                               SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
+                connected_components_obj = connected_components.ConnectedComponents(similarity_methods.levenshtein_similarity_method,
+                                                                SparkObj)
+                result = connected_components_obj.cluster(tags=tags, n_clusters=clusters_number, init_threshold=prerequests["init_threshold"],
                                       increment=prerequests["increment"])
 
             elif algorithm_SM == "JaroWinkler":
-                algo = ConnectedComponents.ConnectedComponents(similarity_methods.jaro_winkler_similarity_method,
-                                                               SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
+                connected_components_obj = connected_components.ConnectedComponents(similarity_methods.jaro_winkler_similarity_method,
+                                                                SparkObj)
+                result = connected_components_obj.cluster(tags=tags, n_clusters=clusters_number, init_threshold=prerequests["init_threshold"],
                                       increment=prerequests["increment"])
 
             elif algorithm_SM == "Tree":
-                algo = ConnectedComponents.ConnectedComponents(similarity_methods.tree_similarity_method,
-                                                               SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, init_threshold=prerequests["init_threshold"],
+                connected_components_obj = connected_components.ConnectedComponents(similarity_methods.tree_similarity_method,
+                                                                SparkObj)
+                result = connected_components_obj.cluster(tags=tags, n_clusters=clusters_number, init_threshold=prerequests["init_threshold"],
                                       increment=prerequests["increment"])
 
-            ConnectedComponent_clusters = ConnectedComponents_getClusters(result)
+            connected_component_clusters = ConnectedComponents_getClusters(result)
             return jsonify({"msg": """You are using PIC clustering with this characteristics:-
                                 number of clusters: {:d},
                                 init_threshold: {:3f},
                                 increment: {:3f}
-                            """.format(k, prerequests["init_threshold"],prerequests["increment"]),
-                            "clusters": ConnectedComponent_clusters})
+                            """.format(clusters_number, prerequests["init_threshold"],prerequests["increment"]),
+                            "clusters": connected_component_clusters})
+
+        else:
+            return jsonify({ "msg": "missing arguments to the url"})
 
 
     else:
@@ -226,19 +247,27 @@ def ConnectedComponentsCluster():
 
 @app.route('/opinion_clustering/PIC', methods=['GET'])
 def PICCluster():
+
     json = request.json
-    k = 2
+    clusters_number = 2
+
     if "k" in json:
-        k = json["k"]
-        if type(k).__name__ != 'int':
+        clusters_number = json["k"]
+
+        if type(clusters_number).__name__ != 'int':
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
-        elif k < 2:
+
+        elif clusters_number < 2:
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
+
     if "data" not in json:
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
+
     if type(json["data"]).__name__ != 'list':
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
-    data = json["data"]
+
+    tags = json["data"]
+
     if "algorithm" in json:
 
         if "name" not in json["algorithm"]:
@@ -250,7 +279,7 @@ def PICCluster():
             algorithm_SM = check_similarity_method(json)
 
             if algorithm_SM == "not in":
-                return jsonify({'msg': 'Your similarityMethod is not found ! you can choose one of these (TagJaccard, CharJaccard, EditDistance, Tree)'})
+                return jsonify({'msg': 'Your similarityMethod is not found ! you can choose one of these (TagJaccard, CharJaccard, EditDistance, Tree, Hamming, Levenshtein, JaroWinkler)'})
 
             prerequests = check_PIC_prerequests(json)
 
@@ -259,62 +288,59 @@ def PICCluster():
                 return jsonify({'msg': 'you should choose threshold from 0 to 1, choose n_iterations more than 10 and choose initialization_mode from these (degree, random)'})
 
             if algorithm_SM == "TagJaccard":
-                algo = pic.PIC(similarity_methods.tag_jaccard_similarity_method,SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
+                pic_obj = pic.PIC(similarity_methods.tag_jaccard_similarity_method,SparkObj)
+                result = pic_obj.cluster(tags=tags, n_clusters=clusters_number, threshold=prerequests["threshold"],
                                       n_iterations=prerequests["n_iterations"],
                                       initialization_mode=prerequests["initialization_mode"])
 
             elif algorithm_SM == "CharJaccard":
-                algo = pic.PIC(similarity_methods.character_jaccard_similarity_method,SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
+                pic_obj = pic.PIC(similarity_methods.character_jaccard_similarity_method,SparkObj)
+                result = pic_obj.cluster(tags=tags, n_clusters=clusters_number, threshold=prerequests["threshold"],
                                       n_iterations=prerequests["n_iterations"],
                                       initialization_mode=prerequests["initialization_mode"])
 
             elif algorithm_SM == "EditDistance":
-                algo = pic.PIC(similarity_methods.edit_distance_method,SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
-                                      n_iterations=prerequests["n_iterations"],
-                                      initialization_mode=prerequests["initialization_mode"])
-
-            elif algorithm_SM == "Tree":
-                algo = pic.PIC(similarity_methods.tree_similarity_method,SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
+                pic_obj = pic.PIC(similarity_methods.edit_distance_method,SparkObj)
+                result = pic_obj.cluster(tags=tags, n_clusters=clusters_number, threshold=prerequests["threshold"],
                                       n_iterations=prerequests["n_iterations"],
                                       initialization_mode=prerequests["initialization_mode"])
 
             elif algorithm_SM == "Hamming":
-                algo = pic.PIC(similarity_methods.hamming_similarity_method,SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
+                pic_obj = pic.PIC(similarity_methods.hamming_similarity_method,SparkObj)
+                result = pic_obj.cluster(tags=tags, n_clusters=clusters_number, threshold=prerequests["threshold"],
                                       n_iterations=prerequests["n_iterations"],
                                       initialization_mode=prerequests["initialization_mode"])
 
             elif algorithm_SM == "Levenshtein":
-                algo = pic.PIC(similarity_methods.levenshtein_similarity_method,SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
+                pic_obj = pic.PIC(similarity_methods.levenshtein_similarity_method,SparkObj)
+                result = pic_obj.cluster(tags=tags, n_clusters=clusters_number, threshold=prerequests["threshold"],
                                       n_iterations=prerequests["n_iterations"],
                                       initialization_mode=prerequests["initialization_mode"])
 
             elif algorithm_SM == "JaroWinkler":
-                algo = pic.PIC(similarity_methods.jaro_winkler_similarity_method,SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
+                pic_obj = pic.PIC(similarity_methods.jaro_winkler_similarity_method,SparkObj)
+                result = pic_obj.cluster(tags=tags, n_clusters=clusters_number, threshold=prerequests["threshold"],
                                       n_iterations=prerequests["n_iterations"],
                                       initialization_mode=prerequests["initialization_mode"])
 
             elif algorithm_SM == "Tree":
-                algo = pic.PIC(similarity_methods.tree_similarity_method,SparkObj)
-                result = algo.cluster(tags=data, n_clusters=k, threshold=prerequests["threshold"],
+                pic_obj = pic.PIC(similarity_methods.tree_similarity_method,SparkObj)
+                result = pic_obj.cluster(tags=tags, n_clusters=clusters_number, threshold=prerequests["threshold"],
                                       n_iterations=prerequests["n_iterations"],
                                       initialization_mode=prerequests["initialization_mode"])
 
 
-            PIC_clusters = Agglomerative_PIC_sparkKmean_getClusters(result)
+            pic_clusters = Agglomerative_PIC_sparkKmean_getClusters(result)
             return jsonify({"msg": """You are using PIC clustering with this characteristics:-
                             number of clusters: {:d},
                             threshold: {:3f},
                             number of iteration: {:d},
                             initialization_mode: {:s}
-                        """.format(k, prerequests["threshold"],prerequests["n_iterations"],prerequests["initialization_mode"]),
-                            "clusters": PIC_clusters})
+                        """.format(clusters_number, prerequests["threshold"],prerequests["n_iterations"],prerequests["initialization_mode"]),
+                            "clusters": pic_clusters})
+
+        else:
+            return jsonify({"msg": "missing arguments to the url"})
 
     else:
         return jsonify({ "msg": "missing arguments to the url"})
@@ -322,22 +348,27 @@ def PICCluster():
 
 @app.route('/opinion_clustering/KMean', methods=['GET'])
 def KmeanCluster():
-    json = request.json
 
-    k = 2
+    json = request.json
+    clusters_number = 2
+
     if "k" in json:
-        k = json["k"]
-        if type(k).__name__ != 'int':
+
+        clusters_number = json["k"]
+
+        if type(clusters_number).__name__ != 'int':
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
-        elif k < 2:
+
+        elif clusters_number < 2:
             return jsonify({"msg": "k is the number of clusters which should be more than 2"})
 
     if "data" not in json:
         return jsonify({"msg": "you should add list of hashtags for every opinion"})
 
-    data = json["data"]
+    tags = json["data"]
 
     if "algorithm" in json:
+
         if "name" not in json["algorithm"]:
             return jsonify({"msg": "You should choose algorithm name KMean"})
 
@@ -347,35 +378,39 @@ def KmeanCluster():
             prerequests = check_KMean_prerequests(json)
 
             if type(prerequests["permutation"]).__name__ == 'float' and prerequests["method"] == "not in":
-                return jsonify({
-                                   'msg': 'you should choose method from these (sum, average) and choose permutation from these ((0, 1),(True, False), (true, false))'})
+                return jsonify({'msg': 'you should choose method from these (sum, average) and choose permutation from these ((0, 1),(True, False), (true, false))'})
 
             if type(prerequests["permutation"]).__name__ == 'float':
-                return jsonify(
-                    {'msg': 'you should choose permutation from these ((0, 1),(True, False), (true, false))'})
+                return jsonify({'msg': 'you should choose permutation from these ((0, 1),(True, False), (true, false))'})
 
             if prerequests["method"] == "not in":
                 return jsonify({'msg': 'you should choose method from these (sum, average)'})
 
-            algo = sparkKmeans.KMeansClustering(SparkObj)
-            result = algo.cluster(tags=data, n_clusters=k, permutation=prerequests["permutation"], permutation_drop=0.5,
+            kmeans_obj = spark_kmeans.KMeansClustering(SparkObj)
+            result = kmeans_obj.cluster(tags=tags, n_clusters=clusters_number, permutation=prerequests["permutation"], permutation_drop=0.5,
                                   method=prerequests["method"])
 
-            KmeansCluster = Agglomerative_PIC_sparkKmean_getClusters(result)
+            kmeans_cluster = Agglomerative_PIC_sparkKmean_getClusters(result)
             return jsonify({"msg": """You are using spark Kmeans clustering with this characteristics:-
                                         number of clusters: {:d},
                                         permutation: {:b},
                                         permutation drop: {:3f},
                                         method: {:s}
-                                    """.format(k, prerequests["permutation"], 0.5,
+                                    """.format(clusters_number, prerequests["permutation"], 0.5,
                                                prerequests["method"]),
-                            "clusters": KmeansCluster})
+                            "clusters": kmeans_cluster})
 
     else:
         return jsonify({ "msg": "missing arguments to the url"})
 
 
-def check_similarity_method(json):  # check similarity method
+def check_similarity_method(json):
+    """
+
+    Check similarity method name in request json
+    :param json: json object
+    :return: str if exist => similarity method name, else => not in
+    """
     if "similarityMethod" in json["algorithm"]:
         algorithm_SM = json["algorithm"]["similarityMethod"]
         algorithm_SM_list = ["TagJaccard", "CharJaccard", "EditDistance", "Tree", "Hamming", "Levenshtein", "JaroWinkler"]
@@ -387,7 +422,13 @@ def check_similarity_method(json):  # check similarity method
         return "not in"
 
 
-def check_agglomarative_prerequests(json):  # check agglomarative prerequests
+def check_agglomarative_prerequests(json):
+    """
+
+    Check agglomerative prerequests in request json
+    :param json: json object
+    :return: json object
+    """
     jsonObj = {"affinity": " ", "linkage": " "}
     if "prerequest" in json["algorithm"] and type(json["algorithm"]["prerequest"]).__name__ == 'dict':
         if "affinity" in json["algorithm"]["prerequest"]:
@@ -421,7 +462,14 @@ def check_agglomarative_prerequests(json):  # check agglomarative prerequests
     return jsonObj
 
 
-def check_CC_prerequests(json):  # check connected components prerequests
+def check_CC_prerequests(json):
+    """
+
+    Check connected components prerequests in request json
+    :param json: json object
+    :return: json object
+    """
+
     jsonObj = {"init_threshold": 0.0, "increment": 0.0}
     if "prerequest" in json["algorithm"] and type(json["algorithm"]["prerequest"]).__name__ == 'dict':
         if "init_threshold" in json["algorithm"]["prerequest"]:
@@ -460,6 +508,13 @@ def check_CC_prerequests(json):  # check connected components prerequests
 
 
 def check_PIC_prerequests(json):
+    """
+
+    Check pic prerequests in request json
+    :param json: json object
+    :return: json object
+    """
+
     jsonObj = {"threshold": 0.0, "n_iterations": 0, "initialization_mode": " "}
     if "prerequest" in json["algorithm"] and type(json["algorithm"]["prerequest"]).__name__ == 'dict':
         if "threshold" in json["algorithm"]["prerequest"]:
@@ -514,6 +569,13 @@ def check_PIC_prerequests(json):
 
 
 def check_KMean_prerequests(json):
+    """
+
+    Check kmean prerequests in request json
+    :param json: json object
+    :return: json object
+    """
+
     jsonObj = {"permutation": True, "method": " "}
     if "prerequest" in json["algorithm"] and type(json["algorithm"]["prerequest"]).__name__ == 'dict':
         if "permutation" in json["algorithm"]["prerequest"]:

@@ -1,11 +1,11 @@
 import unittest
-from semantic_tree import Parser
+from semantic_tree import parser
 
 
 class TestTree(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.Tree = Parser.Tree("E:\\root")
+        cls.Tree = parser.Tree("E:\\root")
         print('setupClass\n')
 
     @classmethod

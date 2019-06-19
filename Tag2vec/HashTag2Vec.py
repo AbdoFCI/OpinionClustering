@@ -46,6 +46,7 @@ class HashTag2Vec:
 
     def train(self,tags,window=6, alpha=0.03, epochs=30,vic_size=150,min_count=.3):
         """
+
         :param min_count: int  Ignores all words with total absolute frequency lower than this - (2, 100)
         :param tags: Tag set list of hashTags
         :param window:  int - The maximum distance between the current and predicted word within a sentence.
@@ -55,6 +56,7 @@ class HashTag2Vec:
         :param vic_size:int - Dimensionality of the feature vectors. - (50, 300)
         :return: None
         """
+
         if self.permutation:
             tags = self._permutation(tags,drop=1)
         tags = self.flat(tags)
@@ -74,11 +76,13 @@ class HashTag2Vec:
     @staticmethod
     def _permutation(tags, cut_window=0,drop=0.5):
         """
+
         :param tags: list of list tags
         :param cut_window: int
         :param drop: float the parentage of the output
         :return: list of list
         """
+
         result = []
         for op in tags:
             if type(op) != type(str):
@@ -92,10 +96,12 @@ class HashTag2Vec:
     @staticmethod
     def flat(tags):
         """
+
         the function convert 2D list to 1 D
         :param tags: list of list of tag.type
         :return: list of tag.type
         """
+
         result =[]
         for tag in tags:
             result+=tag
@@ -103,9 +109,11 @@ class HashTag2Vec:
 
     def op2vec(self,tags):
         """
+
         :param tags: list of tags that represent the opinion
         :return: numpy.array representations of opinion
         """
+
         if self.model is None:
             raise Exception("model is not trained yet")
         opinion_matrix = [self.model.wv[tag] for tag in tags]

@@ -1,5 +1,5 @@
 import unittest
-from distance_measurement_algorithms.similarity_methods import *
+from distance_measurement.similarity_methods import *
 
 
 class TestDistanceMeasurementAlgorithms(unittest.TestCase):

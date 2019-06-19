@@ -1,10 +1,11 @@
 import nltk
-from semantic_tree import Parser
+from semantic_tree import parser
 import textdistance
 
 
 def tag_jaccard_similarity_method(list1,list2):
     """
+
     get the jaccard similarity between two lists based on tag
     :param list1: list of str
     :param list2: list of str
@@ -17,6 +18,7 @@ def tag_jaccard_similarity_method(list1,list2):
 
 def character_jaccard_similarity_method(list1,list2):
     """
+
     get the jaccard similarity between two lists based on characters
     :param list1: list of str
     :param list2: list of str
@@ -32,6 +34,7 @@ def character_jaccard_similarity_method(list1,list2):
 
 def edit_distance_method(list1,list2):
     """
+
     get the levenshtein distance between two lists
     :param list1: list of str
     :param list2: list of str
@@ -44,12 +47,13 @@ def edit_distance_method(list1,list2):
 
 def tree_similarity_method(list1,list2):
      """
+
     get the similarity between two lists using similarity tree
     :param list1: list of str
     :param list2: list of str
     :return: double
     """
-     sim = Parser.HashTagSimilarity()
+     sim = parser.HashTagSimilarity()
      return sim.get_list_similarity(list1, list2)
 
 
@@ -59,7 +63,7 @@ def hamming_similarity_method(list1, list2):
 
     :param list1:list of str
     :param list2:list of str
-    :return:
+    :return: double
     """
     text1 = "".join(list1)
     text2 = "".join(list2)
@@ -71,7 +75,7 @@ def levenshtein_similarity_method(list1, list2):
 
     :param list1:list of str
     :param list2:list of str
-    :return:
+    :return: double
     """
     text1 = "".join(list1)
     text2 = "".join(list2)
@@ -83,7 +87,7 @@ def jaro_winkler_similarity_method(list1, list2):
 
     :param list1:list of str
     :param list2:list of str
-    :return:
+    :return: double
     """
     text1 = "".join(list1)
     text2 = "".join(list2)
