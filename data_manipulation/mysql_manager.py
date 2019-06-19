@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 from mysql.connector import Error, MySQLConnection
-from  entities import opinion
+from  entities import Opinion
 
 def read_db_config(file_name='data_manipulation\\config.ini', section='mysql'):
     """
